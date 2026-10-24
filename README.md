@@ -1,31 +1,24 @@
 # exports-shadow
 
+[![ci](https://github.com/kanchingyg/exports-shadow/actions/workflows/ci.yml/badge.svg)](https://github.com/kanchingyg/exports-shadow/actions/workflows/ci.yml)
 [![npm](https://img.shields.io/npm/v/exports-shadow)](https://www.npmjs.com/package/exports-shadow)
 [![JSR](https://jsr.io/badges/@kanchingyg/exports-shadow)](https://jsr.io/@kanchingyg/exports-shadow)
+[![license](https://img.shields.io/npm/l/exports-shadow)](https://github.com/kanchingyg/exports-shadow/blob/HEAD/LICENSE)
 
-`package.json` `"exports"` conditions match in key order. Bun and Deno both accept `"node"`, so a later `"bun"` or `"deno"` key never wins. Wrangler's defaults are `workerd` / `worker` / `browser` (not `node`); an earlier `"browser"` or `"import"` can hide a Workers file the same way.
-
-exports-shadow prints the file each of node, bun, deno, and workerd resolves for every subpath, and flags shadow when a runtime-specific key loses to an earlier broader one.
-
-## Measured output
-
-Fixture ordered `node` → `bun` → `deno` → `default`, each path a different file. Bun 1.4.2 and Node 22 both printed `RESOLVED=node` when importing it:
+exports-shadow prints the file Node, Bun, Deno and workerd resolve for each `exports` subpath, and flags runtime keys that an earlier key hides.
 
 ```text
-$ exports-shadow fixtures/shadow-order
-
-shadow-order-fixture@0.0.0
-
-shadow  .
-          node     ./dist/node.js
-          bun      ./dist/node.js  <- shadow (node before bun)
-          deno     ./dist/node.js  <- shadow (node before deno)
-          workerd  ./dist/default.js
-
-shadow: a runtime-specific key exists but an earlier broader key wins
+┌─ keys are tried top to bottom ─────────────────────────────────┐
+│ "exports": { ".": {                                            │
+│   "node":    "./dist/node.js",    <- node, bun, deno stop here │
+│   "bun":     "./dist/bun.js",     never reached                │
+│   "deno":    "./dist/deno.js",    never reached                │
+│   "default": "./dist/default.js"  <- workerd stops here        │
+│ } }                                                            │
+└────────────────────────────────────────────────────────────────┘
 ```
 
-Exit `0` when nothing is shadowed, `1` on shadow, `2` on error.
+Each runtime takes the first key in its own condition set. Bun and Deno both include `"node"`, so a `"bun"` or `"deno"` key placed after it never wins. Wrangler's defaults (`workerd`, `worker`, `browser`) leave out `node`, but an earlier `"browser"` or `"import"` key can hide a Workers file the same way.
 
 ## Install
 
@@ -50,18 +43,38 @@ bun run build
 node dist/cli.js fixtures/shadow-order
 ```
 
+## Quick start
+
+Fixture ordered `node` → `bun` → `deno` → `default`, each path a different file. Bun 1.4.2 and Node 22 both printed `RESOLVED=node` when importing it. The `deno` row comes from Deno's documented conditions. Deno was not run on this fixture.
+
+```text
+$ exports-shadow fixtures/shadow-order
+
+shadow-order-fixture@0.0.0
+
+shadow  .
+          node     ./dist/node.js
+          bun      ./dist/node.js  <- shadow (node before bun)
+          deno     ./dist/node.js  <- shadow (node before deno)
+          workerd  ./dist/default.js
+
+shadow: a runtime-specific key exists but an earlier broader key wins
+```
+
+Exit `0` when nothing is shadowed, `1` on shadow, `2` on error.
+
 ## Use
 
-```bash
-exports-shadow                          # current directory
-exports-shadow ./packages/sdk           # folder or package.json path
-exports-shadow msgpackr                 # installed dependency name
-exports-shadow --json
-exports-shadow --runtime bun,workerd
-exports-shadow --fix                   # print a suggested reorder (no write)
-exports-shadow --apply                  # backup, then write after you type "apply"
-exports-shadow --undo                   # restore that backup
-```
+Pass a directory, a `package.json` path, or an installed package name. Default target is the current directory.
+
+| Flag | What it does | Default |
+| --- | --- | --- |
+| `--json` | Print a machine-readable report (`schemaVersion` 1) | off |
+| `--runtime <list>` | Limit columns to a subset of `node,bun,deno,workerd` | all four |
+| `--fix` | Print a suggested reordered `exports` object (no write) | off |
+| `--apply` | Write that reorder after you type `apply` (backup first) | off |
+| `--undo` | Restore the last `--apply` backup | off |
+| `--yes` | Skip confirmation for `--apply` / `--undo` | off |
 
 `--apply` copies `package.json` to `package.json.exports-shadow.bak` and writes `.exports-shadow-state.json` next to it. `--undo` restores the backup.
 
@@ -72,10 +85,17 @@ import { scan, resolveSubpath, detectShadow, suggestReorder } from "exports-shad
 
 const report = scan("./packages/sdk");
 // report.rows[n].cells[m].resolved / .shadow
-// report.suggestedExports — reorder suggestion; scan() does not write files
+// report.suggestedExports: reorder suggestion
+// scan() does not write files
 ```
 
-Condition sets live in `src/conditions.ts` (Node, Bun, Deno, Wrangler docs linked there). Resolution uses [`resolve.exports`](https://www.npmjs.com/package/resolve.exports).
+## How it works
+
+The CLI and `scan()` walk every `exports` subpath for the four runtimes in `ALL_RUNTIMES`: `node`, `bun`, `deno`, and `workerd`. Condition sets are pinned in `src/conditions.ts` from the [Node](https://nodejs.org/api/packages.html#conditional-exports), [Bun](https://bun.com/docs/runtime/module-resolution), [Deno](https://docs.deno.com/runtime/fundamentals/node/), and [Wrangler](https://developers.cloudflare.com/workers/wrangler/bundling/) docs. Resolution goes through [`resolve.exports`](https://www.npmjs.com/package/resolve.exports) with those sets. A cell is shadowed when a runtime-specific key (`bun`, `deno`, `workerd`, `worker`) exists but an earlier broader key (`node`, `import`, `require`, `default`, `browser`, and related) wins.
+
+## Limits
+
+Condition sets are pinned in source. The tool does not read them from the installed runtime. Only `node`, `bun`, `deno`, and `workerd` are covered. Deno and workerd were not run on the `fixtures/shadow-order` fixture. The `deno` and `workerd` columns follow the documented condition lists above.
 
 ## Evidence on public packages
 
@@ -89,9 +109,9 @@ Checked on the installed tarball (npm's web JSON can reorder keys):
 
 ## Reported elsewhere
 
-- [oven-sh/bun#15053](https://github.com/oven-sh/bun/issues/15053): Bun matches `"node"`, so `"bun"` after `"node"` is ignored; put `bun` first.
-- [denoland/deno#26789](https://github.com/denoland/deno/issues/26789): Deno's condition list includes `"node"`; order still decides.
-- [wintercg/runtime-keys#5](https://github.com/wintercg/runtime-keys/issues/5): runtime keys and who should match `"node"`.
+- [oven-sh/bun#15053](https://github.com/oven-sh/bun/issues/15053): Bun matches `"node"`, so `"bun"` after `"node"` is ignored. Put `bun` first.
+- [denoland/deno#26789](https://github.com/denoland/deno/issues/26789): Deno's condition list includes `"node"`. Order still decides.
+- [WinterTC55/runtime-keys#5](https://github.com/WinterTC55/runtime-keys/issues/5): proposes a common WinterCG key so packages can declare Minimum Common API compatibility.
 
 ## License
 
