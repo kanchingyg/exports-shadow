@@ -8,10 +8,15 @@ import {
 
 const BROADER = new Set<string>(BROADER_KEYS);
 
+/** Result of walking one exports target for shadow under a runtime. */
 export interface ShadowHit {
+  /** True when a broader key won before an applicable runtime-specific key. */
   shadow: boolean;
+  /** Runtime-specific key that was skipped, when shadow is true. */
   shadowedKey: string | null;
+  /** Broader key that won, when shadow is true. */
   winnerKey: string | null;
+  /** Condition key that matched at the leaf, when known. */
   matchedCondition: string | null;
 }
 

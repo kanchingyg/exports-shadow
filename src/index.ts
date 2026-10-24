@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// Public API. Importing this file runs nothing: no process spawn, no exit.
+/**
+ * Public library API for exports-shadow.
+ * Importing this module does not spawn processes or call process.exit.
+ */
 export {
   ALL_RUNTIMES,
   BUN_CONDITIONS,

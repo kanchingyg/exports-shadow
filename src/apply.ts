@@ -5,18 +5,29 @@ import { loadPackage } from "./load";
 import { suggestReorder } from "./reorder";
 import type { PackageJson } from "./types";
 
+/** State file name written next to package.json by {@link applyReorder}. */
 export const STATE_FILE = ".exports-shadow-state.json";
+
+/** Suffix appended to package.json for the backup created by {@link applyReorder}. */
 export const BACKUP_SUFFIX = ".exports-shadow.bak";
 
+/** Contents of {@link STATE_FILE} after a successful apply. */
 export interface ApplyState {
+  /** Absolute path of the package.json that was rewritten. */
   packageJsonPath: string;
+  /** Absolute path of the backup copy. */
   backupPath: string;
+  /** ISO timestamp when the apply ran. */
   appliedAt: string;
 }
 
+/** Result of {@link applyReorder} or {@link undoReorder}. */
 export interface ApplyResult {
+  /** Absolute path of the package.json that was written or restored. */
   packageJsonPath: string;
+  /** Absolute path of the backup file used for that operation. */
   backupPath: string;
+  /** True when package.json was written. */
   wrote: boolean;
 }
 

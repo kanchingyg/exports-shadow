@@ -9,11 +9,16 @@
  * the same fixture would select node and shadow "deno".
  */
 
+/** Runtimes the scanner can report columns for. */
 export const ALL_RUNTIMES = ["node", "bun", "deno", "workerd"] as const;
+
+/** One of the four runtimes in {@link ALL_RUNTIMES}. */
 export type RuntimeName = (typeof ALL_RUNTIMES)[number];
 
-/** Keys that are runtime-specific entry points (shadow candidates). */
+/** Condition keys treated as runtime-specific entry points (shadow candidates). */
 export const RUNTIME_SPECIFIC_KEYS = ["bun", "deno", "workerd", "worker"] as const;
+
+/** One of the keys in {@link RUNTIME_SPECIFIC_KEYS}. */
 export type RuntimeSpecificKey = (typeof RUNTIME_SPECIFIC_KEYS)[number];
 
 /**
@@ -62,7 +67,7 @@ export const BUN_CONDITIONS: readonly string[] = [
 
 /**
  * Deno ESM / npm import conditions.
- * https://docs.deno.com/runtime/fundamentals/node/ — "Control package export conditions"
+ * https://docs.deno.com/runtime/fundamentals/node/ ("Control package export conditions")
  * Official list: ["deno", "node", "import", "module-sync", "default"]
  */
 export const DENO_CONDITIONS: readonly string[] = [
@@ -88,6 +93,7 @@ export const WORKERD_CONDITIONS: readonly string[] = [
   "default",
 ];
 
+/** Pinned condition set for each runtime in {@link ALL_RUNTIMES}. */
 export const CONDITIONS_BY_RUNTIME: Record<RuntimeName, readonly string[]> = {
   node: NODE_CONDITIONS,
   bun: BUN_CONDITIONS,
@@ -113,10 +119,15 @@ export function runtimeKeysFor(runtime: RuntimeName): ReadonlySet<string> {
   }
 }
 
+/** Returns true when `value` is one of {@link ALL_RUNTIMES}. */
 export function isRuntimeName(value: string): value is RuntimeName {
   return (ALL_RUNTIMES as readonly string[]).includes(value);
 }
 
+/**
+ * Parse a comma-separated runtime list.
+ * Returns the runtimes, or an error string when the list is empty or unknown.
+ */
 export function parseRuntimeList(raw: string): RuntimeName[] | string {
   const parts = raw
     .split(",")

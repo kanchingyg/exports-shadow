@@ -45,6 +45,7 @@ function formatCell(cell: ResolveCell): string {
   return `          ${label} ${file}`;
 }
 
+/** Pretty-print an exports value as indented JSON with a trailing newline. */
 export function formatSuggestedExports(exportsField: unknown): string {
   return `${JSON.stringify(exportsField, null, 2)}\n`;
 }

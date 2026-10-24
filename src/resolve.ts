@@ -3,8 +3,11 @@ import { resolve as resolveExports } from "resolve.exports";
 import { CONDITIONS_BY_RUNTIME, type RuntimeName } from "./conditions";
 import type { PackageJson } from "./types";
 
+/** Outcome of resolving one subpath under one runtime's condition set. */
 export interface ResolveResult {
+  /** First resolved path from resolve.exports, or null when none matched. */
   resolved: string | null;
+  /** Error message when resolve.exports threw, otherwise null. */
   error: string | null;
 }
 
@@ -48,7 +51,7 @@ export function listSubpaths(exportsField: unknown): string[] {
   const keys = Object.keys(exportsField as Record<string, unknown>);
   const subpaths = keys.filter((k) => k === "." || k.startsWith("./"));
   if (subpaths.length === 0) {
-    // Conditional map at the root (no "." key) — treat as "."
+    // Conditional map at the root (no "." key): treat as "."
     return ["."];
   }
   return subpaths;

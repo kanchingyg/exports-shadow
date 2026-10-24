@@ -6,7 +6,10 @@ import { suggestReorder } from "./reorder";
 import { detectShadow, exportTarget } from "./shadow";
 import type { PackageTarget, ResolveCell, ScanOptions, ScanResult, SubpathRow } from "./types";
 
-/** Scan a loaded package (library entry). */
+/**
+ * Build a subpath × runtime report for an already loaded package.
+ * Does not write package.json.
+ */
 export function scanPackage(target: PackageTarget, options: ScanOptions = {}): ScanResult {
   const runtimes = options.runtimes?.length ? [...options.runtimes] : [...ALL_RUNTIMES];
   const exportsField = target.packageJson.exports;
@@ -55,7 +58,10 @@ export function scanPackage(target: PackageTarget, options: ScanOptions = {}): S
   };
 }
 
-/** Load + scan from a path, package.json, or dependency name. */
+/**
+ * Load a package from a path, package.json file, or installed dependency name,
+ * then return the same report as {@link scanPackage}.
+ */
 export function scan(target: string, options: ScanOptions & { cwd?: string } = {}): ScanResult {
   const pkg = loadPackage(target, options.cwd ?? process.cwd());
   return scanPackage(pkg, options);

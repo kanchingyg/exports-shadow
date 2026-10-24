@@ -5,7 +5,8 @@ import { dirname, isAbsolute, join, resolve } from "node:path";
 import type { PackageJson, PackageTarget } from "./types";
 
 /**
- * Resolve a user target: folder, path to package.json, or installed package name.
+ * Resolve a folder, a path to package.json, or an installed package name into a
+ * {@link PackageTarget}. Throws when the target cannot be found or parsed.
  */
 export function loadPackage(target: string, cwd: string = process.cwd()): PackageTarget {
   const trimmed = target.trim();
