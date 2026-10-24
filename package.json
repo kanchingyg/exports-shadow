@@ -1,7 +1,7 @@
 {
   "name": "exports-shadow",
-  "version": "0.1.0",
-  "description": "Shows which file each runtime resolves for every package.json exports subpath, and flags when a runtime-specific key is shadowed.",
+  "version": "0.1.1",
+  "description": "Prints the file Node, Bun, Deno and workerd resolve for each exports subpath, and flags hidden runtime keys.",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
