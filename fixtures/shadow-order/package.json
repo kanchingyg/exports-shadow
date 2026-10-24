@@ -1,0 +1,14 @@
+{
+  "name": "shadow-order-fixture",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "node": "./dist/node.js",
+      "bun": "./dist/bun.js",
+      "deno": "./dist/deno.js",
+      "default": "./dist/default.js"
+    }
+  }
+}

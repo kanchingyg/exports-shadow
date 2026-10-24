@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+dist/
+*.tgz
+
+# Local
+.dev.vars
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Backups from --apply
+*.exports-shadow.bak
+.exports-shadow-state.json
+
+# Fixture consumer install
+fixtures/consumer-tmp/

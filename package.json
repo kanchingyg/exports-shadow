@@ -1,0 +1,65 @@
+{
+  "name": "exports-shadow",
+  "version": "0.1.0",
+  "description": "Shows which file each runtime resolves for every package.json exports subpath, and flags when a runtime-specific key is shadowed.",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "exports-shadow": "dist/cli.js"
+  },
+  "files": [
+    "dist/cli.js",
+    "dist/index.js",
+    "dist/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.1.0"
+  },
+  "scripts": {
+    "start": "bun run src/cli.ts",
+    "test": "bun test",
+    "typecheck": "bun x tsc",
+    "lint": "bun x tsc --noEmit",
+    "check-versions": "bun run scripts/check-versions.ts",
+    "build": "bun build src/cli.ts --outfile dist/cli.js --target node && bun build src/index.ts --outfile dist/index.js --target node && bun x tsc -p tsconfig.build.json",
+    "build:bin": "bun run build:bin:x64 && bun run build:bin:arm64",
+    "build:bin:x64": "bun build src/cli.ts --compile --target=bun-linux-x64 --outfile dist/exports-shadow-linux-x64",
+    "build:bin:arm64": "bun build src/cli.ts --compile --target=bun-linux-arm64 --outfile dist/exports-shadow-linux-arm64",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+  },
+  "keywords": [
+    "exports",
+    "package.json",
+    "conditional-exports",
+    "bun",
+    "deno",
+    "workerd",
+    "diagnostics"
+  ],
+  "license": "AGPL-3.0-only",
+  "author": "Augusto Cerrutti (https://github.com/kanchingyg)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kanchingyg/exports-shadow.git"
+  },
+  "bugs": "https://github.com/kanchingyg/exports-shadow/issues",
+  "homepage": "https://github.com/kanchingyg/exports-shadow#readme",
+  "dependencies": {
+    "resolve.exports": "^2.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "bun-types": "^1.4.4",
+    "typescript": "5.8.3"
+  }
+}
